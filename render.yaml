@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: worldsphere-server
+    runtime: python
+    rootDir: server
+    plan: free
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - { key: PYTHON_VERSION, value: 3.12.8 }
+      - { key: DATABASE_URL, sync: false }
+      - { key: FRONTEND_URL, sync: false }
+      - { key: CORS_ORIGINS, value: "" }
+      - { key: APP_URL, sync: false }
+      - { key: AUTH_SECRET, generateValue: true }
+      - { key: OPENROUTER_API_KEY, sync: false }
+      - { key: AI_MODEL, value: openrouter/free }
+      - { key: AI_PROVIDER_SORT, value: latency }
+      - { key: AI_CONNECT_TIMEOUT_SECONDS, value: 5 }
+      - { key: AI_RESPONSE_TIMEOUT_SECONDS, value: 45 }
+      - { key: DATABASE_POOL_SIZE, value: 5 }
+      - { key: AI_RATE_LIMIT_PER_MINUTE, value: 20 }
+      - { key: AUTH_RATE_LIMIT_PER_MINUTE, value: 10 }
+  - type: web
+    name: worldsphere-ml
+    runtime: python
+    rootDir: ml-service
+    plan: free
+    buildCommand: pip install --no-cache-dir -r requirements.txt && python model/train.py
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - { key: PYTHON_VERSION, value: 3.12.8 }
+      - { key: FRONTEND_URL, sync: false }
+      - { key: CORS_ORIGINS, value: "" }

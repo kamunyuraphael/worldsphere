@@ -1,0 +1,5 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+psycopg[binary,pool]>=3.2,<4
+httpx[http2]>=0.27,<1
+pytest>=8

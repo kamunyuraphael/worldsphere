@@ -1,0 +1,25 @@
+.unsplash-credit {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 2;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  line-height: 1.6;
+  pointer-events: none; /* the chip itself doesn't block clicks on the card behind it... */
+}
+.unsplash-credit a {
+  pointer-events: auto; /* ...but its links are still clickable */
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.unsplash-credit--dark {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.45);
+}
+.unsplash-credit--light {
+  color: rgba(0, 0, 0, 0.75);
+  background: rgba(255, 255, 255, 0.7);
+}
