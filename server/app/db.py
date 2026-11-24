@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import psycopg
+import psycopg.conninfo
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
@@ -33,8 +34,8 @@ def _connection_pool() -> ConnectionPool:
             conninfo=database_url(),
             min_size=0,
             max_size=max(2, int(os.getenv("DATABASE_POOL_SIZE", "5"))),
-            timeout=10,
-            kwargs={"row_factory": dict_row, "connect_timeout": 10},
+            timeout=30,  # a paused Neon database can take several seconds to wake up
+            kwargs={"row_factory": dict_row, "connect_timeout": 15},
             open=True,
         )
     return _pool
@@ -53,7 +54,26 @@ def close():
         _pool = None
 
 
+def check_connection() -> None:
+    """Connect once, directly, so a failure shows psycopg's real error.
+
+    The pool retries silently and only ever reports "PoolTimeout", which hides
+    causes like a wrong password, an unreachable host or Postgres not running.
+    """
+    try:
+        with psycopg.connect(database_url(), connect_timeout=15) as connection:
+            connection.execute("SELECT 1")
+    except psycopg.Error as exc:
+        host = psycopg.conninfo.conninfo_to_dict(database_url()).get("host", "?")
+        raise RuntimeError(
+            f"Could not connect to PostgreSQL at host '{host}': {str(exc).strip()}\n"
+            "Check DATABASE_URL in server/.env (host, password, ?sslmode=require for Neon) "
+            "and that the database is running."
+        ) from exc
+
+
 def init():
+    check_connection()
     migrations = sorted(MIGRATION_DIR.glob("*.sql"))
     if not migrations:
         raise RuntimeError(f"No database migrations found in: {MIGRATION_DIR}")
