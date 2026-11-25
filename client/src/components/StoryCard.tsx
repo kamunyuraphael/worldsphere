@@ -1,7 +1,7 @@
 import { Link, useViewTransitionState } from 'react-router-dom';
 import { ArrowRight, Clock, MapPin } from 'lucide-react';
-import { getOptimizedImage } from '../utils/cloudinary';
 import type { WildlifeEntry } from '../types/wildlife';
+import CloudImage from './CloudImage';
 
 interface Props {
   entry: WildlifeEntry;
@@ -31,15 +31,15 @@ const locationOf = (entry: WildlifeEntry): string => {
 const StoryCard = ({ entry, featured = false }: Props) => {
   const to = `/species/${entry.id}`;
   const isTransitioning = useViewTransitionState(to);
-  const image = getOptimizedImage(entry.image, featured ? 'hero' : 'card');
+  const image = entry.image;
 
   return (
     <Link to={to} viewTransition className={`story ${featured ? 'story--featured' : ''}`}>
       <div className="story__media">
-        <img
+        <CloudImage
           src={image}
           alt={entry.name}
-          loading="lazy" decoding="async"
+          sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 33vw"
           style={{ viewTransitionName: isTransitioning ? 'species-media' : undefined }}
         />
         <div className="story__scrim" />

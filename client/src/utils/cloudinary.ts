@@ -31,3 +31,21 @@ export const getOptimizedImage = (url: string, type: 'card' | 'hero' | 'thumb' =
   // 3. Return the modified URL
   return `${baseUrl}${transformations}${imagePath}`;
 };
+
+/**
+ * Helpers for serving Cloudinary images at the size a screen actually needs.
+ * Works on any res.cloudinary.com image URL, with or without an existing
+ * transformation segment, and leaves every other URL untouched.
+ */
+const CLOUDINARY_IMAGE = /^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?:(?:[a-z]{1,3}_[^/,]+,?)+\/)?(.+)$/;
+
+export const isCloudinary = (url: string) => CLOUDINARY_IMAGE.test(url);
+
+/** Same image, resized to `width` px (never upscaled), best format and automatic quality. */
+export const cldUrl = (url: string, width: number): string => {
+  const match = CLOUDINARY_IMAGE.exec(url);
+  return match ? `${match[1]}f_auto,q_auto,w_${width},c_limit/${match[2]}` : url;
+};
+
+export const cldSrcSet = (url: string, widths: readonly number[]): string | undefined =>
+  isCloudinary(url) ? widths.map(w => `${cldUrl(url, w)} ${w}w`).join(', ') : undefined;

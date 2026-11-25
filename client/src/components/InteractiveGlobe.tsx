@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLOBE_REGIONS as REGIONS } from '../data/globeRegions';
 
 /**
  * Interactive Earth (Three.js).
@@ -15,14 +16,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
  * Fallbacks: no WebGL → CSS gradient orb; reduced-motion → no auto-rotation.
  */
 
-const REGIONS: { name: string; lat: number; lon: number }[] = [
-  { name: 'Africa', lat: 2, lon: 20 },
-  { name: 'Asia', lat: 45, lon: 90 },
-  { name: 'Europe', lat: 50, lon: 15 },
-  { name: 'North America', lat: 45, lon: -100 },
-  { name: 'South America', lat: -15, lon: -60 },
-  { name: 'Oceania', lat: -25, lon: 135 },
-];
+
 
 const hexToRGB = (hex: string): [number, number, number] => {
   const h = hex.trim().replace('#', '');
@@ -319,12 +313,21 @@ const InteractiveGlobe = ({ interactive = true }: Props) => {
         setTooltip(t => (t.visible ? { ...t, visible: false } : t));
       }
     };
-    const onClick = (e: PointerEvent) => {
+    // A tap opens a region; a drag (rotating the globe) must not. Compare where and when the pointer went down and came up.
+    let down: { x: number; y: number; t: number } | null = null;
+    const onDown = (e: PointerEvent) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; };
+    const onUp = (e: PointerEvent) => {
+      const start = down;
+      down = null;
+      if (!start) return;
+      const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+      if (moved > 8 || performance.now() - start.t > 600) return;
       const obj = pickMarker(e.clientX, e.clientY);
       if (obj) navigate(`/stories?region=${encodeURIComponent(obj.userData.region)}`);
     };
     renderer.domElement.addEventListener('pointermove', onMove);
-    renderer.domElement.addEventListener('pointerdown', onClick);
+    renderer.domElement.addEventListener('pointerdown', onDown);
+    renderer.domElement.addEventListener('pointerup', onUp);
 
     const resize = () => {
       const w = mount.clientWidth, h = mount.clientHeight;
@@ -366,7 +369,8 @@ const InteractiveGlobe = ({ interactive = true }: Props) => {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
       renderer.domElement.removeEventListener('pointermove', onMove);
-      renderer.domElement.removeEventListener('pointerdown', onClick);
+      renderer.domElement.removeEventListener('pointerdown', onDown);
+      renderer.domElement.removeEventListener('pointerup', onUp);
       controls.dispose();
       renderer.dispose();
       earthMat.dispose();
@@ -381,7 +385,7 @@ const InteractiveGlobe = ({ interactive = true }: Props) => {
       {failed ? (
         <div className="globe__fallback" aria-hidden="true" />
       ) : (
-        <div ref={mountRef} className="globe__stage" role="img" aria-label="Interactive 3D globe of Earth" />
+        <div ref={mountRef} className="globe__stage" role="img" aria-label="Interactive 3D globe of Earth. The region links below open the same stories." />
       )}
       {tooltip.visible && (
         <div className="globe__tip" style={{ left: tooltip.x, top: tooltip.y }}>

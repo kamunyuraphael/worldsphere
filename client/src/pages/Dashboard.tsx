@@ -13,6 +13,7 @@ import { CATEGORY_COLORS } from '../utils/chartColors';
 import { fetchTaxonImage, STATUS_LABEL, type GbifCard } from '../services/gbif';
 import {
   fetchSpeciesOverview, fetchOccurrenceOverview, fetchRecordsByYear, fetchSpotlight, THREATENED,
+  FILTER_COUNTRIES, filterCountryName,
   type SpeciesOverview, type OccurrenceOverview, type NamedCount,
 } from '../services/gbifStats';
 import './Dashboard.css';
@@ -50,20 +51,30 @@ const recordToChartData = (record: Record<string, number>): { name: string; coun
 const compact = (n: number) => Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 const axisTick = { fontSize: 11, fill: 'var(--dash-muted)', fontFamily: 'var(--dash-mono)' };
 
-/** Loads once; surfaces loading + a readable error so each panel group fails on its own. */
-function useLoad<T>(load: () => Promise<T>) {
-  const [state, setState] = useState<{ data: T | null; error: string; loading: boolean }>({ data: null, error: '', loading: true });
+/**
+ * Loads on mount and again whenever `deps` change or `retry()` is called.
+ * Old data stays visible while a reload is in flight (`loading` is true), so
+ * changing a filter never blanks the page.
+ */
+function useLoad<T>(load: () => Promise<T>, deps: readonly unknown[] = []) {
   const [attempt, setAttempt] = useState(0);
-  const retry = () => { setState(s => ({ ...s, error: '', loading: true })); setAttempt(n => n + 1); };
+  const key = `${JSON.stringify(deps)}#${attempt}`;
+  const [state, setState] = useState<{ key: string; data: T | null; error: string }>({ key: '', data: null, error: '' });
   useEffect(() => {
     let alive = true;
     load()
-      .then(data => alive && setState({ data, error: '', loading: false }))
-      .catch(err => alive && setState({ data: null, error: err instanceof Error ? err.message : 'Request failed.', loading: false }));
+      .then(data => { if (alive) setState({ key, data, error: '' }); })
+      .catch(err => { if (alive) setState(s => ({ key, data: s.data, error: err instanceof Error ? err.message : 'Request failed.' })); });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt]);
-  return { ...state, retry };
+  }, [key]);
+  const settled = state.key === key;
+  return {
+    data: state.data,
+    error: settled ? state.error : '',
+    loading: !settled,
+    retry: () => setAttempt(n => n + 1),
+  };
 }
 
 /** Placeholder panels shown while a section loads, so the layout does not jump. */
@@ -186,8 +197,12 @@ const Legend = ({ rows, colorFor, total }: { rows: NamedCount[]; colorFor: (name
 const Dashboard = () => {
   // --- Live data from GBIF (independent requests so one failure doesn't blank the page) ---
   const species = useLoad<SpeciesOverview>(fetchSpeciesOverview);
-  const occurrences = useLoad<OccurrenceOverview>(fetchOccurrenceOverview);
-  const byYear = useLoad<NamedCount[]>(() => fetchRecordsByYear(1990));
+  const [country, setCountry] = useState('');
+  const [yearFrom, setYearFrom] = useState(1990);
+  const filters = { country: country || undefined, yearFrom };
+  const occurrences = useLoad<OccurrenceOverview>(() => fetchOccurrenceOverview(filters), [country, yearFrom]);
+  const byYear = useLoad<NamedCount[]>(() => fetchRecordsByYear(yearFrom, country || undefined), [country, yearFrom]);
+  const scopeLabel = country ? filterCountryName(country) : 'Worldwide';
   const spotlight = useLoad<GbifCard[]>(() => fetchSpotlight(6));
 
   const iucn = useLoad<IucnStats | null>(fetchIucnStats);
@@ -245,9 +260,9 @@ const Dashboard = () => {
   const categoryTotal = categoryDistributionData.reduce((s, d) => s + d.count, 0);
   const trendTotal = trendDistributionData.reduce((s, d) => s + d.count, 0);
 
-  const gbifError = species.error || occurrences.error;
-  const gbifLoading = species.loading || occurrences.loading;
-  const retryGbif = () => { if (species.error) species.retry(); if (occurrences.error) occurrences.retry(); };
+  const gbifError = species.error || occurrences.error || byYear.error;
+  const gbifLoading = (species.loading && !sp) || (occurrences.loading && !occ);
+  const retryGbif = () => { if (species.error) species.retry(); if (occurrences.error) occurrences.retry(); if (byYear.error) byYear.retry(); };
 
   return (
     <section className="page-shell dash">
@@ -350,9 +365,37 @@ const Dashboard = () => {
           )}
 
           {occ && (
-            <div className="dash-grid" style={{ marginTop: '0.75rem' }}>
-              <Panel title="Where Records Come From" subtitle="Top countries by occurrence records" span={2} height={300}>
-                <BarChart data={occ.topCountries} layout="vertical" margin={{ left: 8 }}>
+            <div className="dash-filters" role="group" aria-label="Occurrence filters">
+              <label>
+                <span>Country</span>
+                <select value={country} onChange={e => setCountry(e.target.value)}>
+                  <option value="">Worldwide</option>
+                  {FILTER_COUNTRIES.map(code => <option key={code} value={code}>{filterCountryName(code)}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>Records since</span>
+                <select value={yearFrom} onChange={e => setYearFrom(Number(e.target.value))}>
+                  {[1950, 1970, 1990, 2000, 2010, 2020].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </label>
+              <p className="dash-filters__note">
+                {occurrences.loading || byYear.loading ? 'Updating…' : `Showing ${occ.totalRecords.toLocaleString()} records · ${scopeLabel}, ${yearFrom} onward`}
+                {' '}· Applies to the record panels below; species checklist figures above are global.
+              </p>
+              {(country || yearFrom !== 1990) && (
+                <button type="button" className="dash-filters__reset" onClick={() => { setCountry(''); setYearFrom(1990); }}>Reset</button>
+              )}
+            </div>
+          )}
+
+          {occ && (
+            <div className="dash-grid" style={{ marginTop: '0.75rem', opacity: occurrences.loading ? 0.55 : 1, transition: 'opacity 0.2s' }}>
+              <Panel
+                title={country ? `What Was Recorded in ${scopeLabel}` : 'Where Records Come From'}
+                subtitle={country ? 'Occurrence records by kingdom' : 'Top countries by occurrence records'}
+                span={2} height={300}>
+                <BarChart data={country ? occ.kingdoms : occ.topCountries} layout="vertical" margin={{ left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" horizontal={false} />
                   <XAxis type="number" tickFormatter={compact} tick={axisTick} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: 'var(--dash-ink-dim)' }} axisLine={false} tickLine={false} />
@@ -374,8 +417,8 @@ const Dashboard = () => {
           )}
 
           {byYear.data && byYear.data.length > 0 && (
-            <div className="dash-grid" style={{ marginTop: '0.75rem' }}>
-              <Panel title="Records Published per Year" subtitle="Occurrence records by event year, 1990 onward" span={3} height={240}
+            <div className="dash-grid" style={{ marginTop: '0.75rem', opacity: byYear.loading ? 0.55 : 1, transition: 'opacity 0.2s' }}>
+              <Panel title="Records Published per Year" subtitle={`Occurrence records by event year · ${scopeLabel}, ${yearFrom} onward`} span={3} height={240}
                 note="The latest year is still filling in as datasets are published.">
                 <LineChart data={byYear.data}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--dash-border)" />
@@ -443,7 +486,7 @@ const Dashboard = () => {
             <p className="dash__lede">
               The conservation risk model's own training data. It is a synthetic starter dataset, so treat the patterns below as
               a demonstration of what the model has learned rather than a real-world census, unlike the GBIF figures above — see{' '}
-              <Link to="/risk-predictor" style={{ color: 'var(--dash-primary)' }}>the risk predictor</Link> to try it on your own inputs.
+              <Link to="/risk-predictor" style={{ color: 'var(--accent-ink)' }}>the risk predictor</Link> to try it on your own inputs.
             </p>
           </div>
 

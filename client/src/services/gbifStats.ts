@@ -115,8 +115,18 @@ export interface OccurrenceOverview {
   topCountries: NamedCount[];
 }
 
-export const fetchOccurrenceOverview = async (): Promise<OccurrenceOverview> => {
+/** Optional narrowing for the occurrence panels (species checklist facets can't be filtered this way). */
+export interface OccurrenceFilters {
+  /** ISO 3166-1 alpha-2 code, e.g. "KE". Omit for worldwide. */
+  country?: string;
+  /** First event year to include. */
+  yearFrom?: number;
+}
+
+export const fetchOccurrenceOverview = async (filters: OccurrenceFilters = {}): Promise<OccurrenceOverview> => {
   const p = new URLSearchParams({ limit: '0', facetLimit: '12' });
+  if (filters.country) p.set('country', filters.country);
+  if (filters.yearFrom) p.set('year', `${filters.yearFrom},${new Date().getFullYear()}`);
   p.append('facet', 'basisOfRecord');
   p.append('facet', 'kingdomKey');
   p.append('facet', 'country');
@@ -130,9 +140,10 @@ export const fetchOccurrenceOverview = async (): Promise<OccurrenceOverview> => 
 };
 
 /** Occurrence records published per year (event year), oldest → newest. */
-export const fetchRecordsByYear = async (from = 1990): Promise<NamedCount[]> => {
+export const fetchRecordsByYear = async (from = 1990, country?: string): Promise<NamedCount[]> => {
   const thisYear = new Date().getFullYear();
   const p = new URLSearchParams({ limit: '0', year: `${from},${thisYear}`, facetLimit: String(thisYear - from + 1) });
+  if (country) p.set('country', country);
   p.append('facet', 'year');
   const res = await gbifRequest<FacetResponse>(`/occurrence/search?${p}`);
   return facetCounts(res, 'YEAR').sort((a, b) => Number(a.name) - Number(b.name));
@@ -151,3 +162,7 @@ export const fetchSpotlight = async (n = 6): Promise<GbifCard[]> => {
     .map(toCard);
   return cards.slice(0, n);
 };
+
+/** Countries offered in the dashboard filter (GBIF ISO codes); Kenya first, as the site's home focus. */
+export const FILTER_COUNTRIES = ['KE', 'TZ', 'UG', 'ET', 'RW', 'ZA', 'MG', 'IN', 'ID', 'BR', 'CO', 'AU', 'US'] as const;
+export const filterCountryName = countryName;

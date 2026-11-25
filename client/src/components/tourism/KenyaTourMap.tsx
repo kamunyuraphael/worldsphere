@@ -80,7 +80,7 @@ const KenyaTourMap = ({ destinations, selected, onSelect }: Props) => {
         />
         <ZoomControl position="bottomright" />
         <MapFocus selected={selected} />
-        <Marker position={NAIROBI} icon={markerIcon(false)}>
+        <Marker position={NAIROBI} icon={markerIcon(false)} alt="Nairobi, arrival and route hub" title="Nairobi">
           <Popup><strong>Nairobi</strong><br />Primary arrival and route hub</Popup>
         </Marker>
         <Polyline
@@ -92,6 +92,8 @@ const KenyaTourMap = ({ destinations, selected, onSelect }: Props) => {
             key={destination.name}
             position={[destination.lat, destination.lng]}
             icon={markerIcon(destination.name === selected.name)}
+            alt={`${destination.name}, ${destination.county} County`}
+            title={destination.name}
             eventHandlers={{ click: () => onSelect(destination) }}
           >
             <Popup minWidth={230}>

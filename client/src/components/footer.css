@@ -27,18 +27,18 @@
   align-items: center;
   padding: 0.6rem 1.1rem;
   border-radius: 8px;
-  color: var(--foundation-color);
+  color: #222831;
   background: var(--highlight-color);
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
 }
-.site-footer__button:hover { color: var(--foundation-color); filter: brightness(1.08); }
+.site-footer__button:hover { color: #222831; filter: brightness(1.08); }
 .site-footer__link-inline { color: var(--on-dark-surface); font-size: 0.9rem; font-weight: 600; }
 
 .site-footer__heading {
   margin: 0 0 1rem;
-  color: var(--highlight-color);
+  color: var(--bright-ink);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -50,7 +50,7 @@
   color: color-mix(in oklab, var(--on-dark-surface) 88%, transparent);
   text-decoration: none;
 }
-.site-footer a:hover { color: var(--highlight-color); text-decoration: underline; text-underline-offset: 3px; }
+.site-footer a:hover { color: var(--bright-ink); text-decoration: underline; text-underline-offset: 3px; }
 .site-footer a:focus-visible { outline: 2px solid var(--highlight-color); outline-offset: 3px; border-radius: 3px; }
 .site-footer .site-footer__button:hover { text-decoration: none; }
 
@@ -75,3 +75,5 @@
   .site-footer__grid { grid-template-columns: 1fr; }
   .site-footer__bottom { flex-direction: column; }
 }
+
+.site-footer a.site-footer__button, .site-footer a.site-footer__button:hover { color: #222831; text-decoration: none; }

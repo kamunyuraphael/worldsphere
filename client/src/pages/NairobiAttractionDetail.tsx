@@ -11,6 +11,7 @@ import {
 import FavoriteButton from '../components/FavoriteButton';
 import { recordActivity } from '../services/accountApi';
 import './NairobiAttractionDetail.css';
+import CloudImage from '../components/CloudImage';
 
 const imageCaption = (path: string) => {
   const filename = decodeURIComponent(path.split('/').pop() ?? 'Attraction view')
@@ -86,7 +87,7 @@ const NairobiAttractionDetail = () => {
       </nav>
 
       <header className="attraction-hero">
-        <img src={imageSet.hero} alt={`${attraction.name} in Nairobi`} onError={(event) => { event.currentTarget.src = imageSet.images[0]; }} />
+        <CloudImage src={imageSet.hero} alt={`${attraction.name} in Nairobi`} sizes="100vw" widths={[800, 1200, 1600, 2000]} priority onError={(event) => { event.currentTarget.src = imageSet.images[0]; }} />
         <div className="attraction-hero__overlay" />
         <div className="attraction-hero__content">
           <Link to="/destinations/nairobi#attractions"><ArrowLeft size={17} /> Back to Nairobi</Link>

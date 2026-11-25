@@ -36,7 +36,7 @@
 }
 .dash__kicker {
   margin: 0 0 0.35rem;
-  color: var(--dash-primary);
+  color: var(--accent-ink);
   font-family: var(--dash-mono);
   font-size: 0.72rem;
   font-weight: 500;
@@ -67,7 +67,7 @@
   text-decoration: none;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-.dash__btn:hover { color: var(--dash-primary); border-color: var(--dash-primary); }
+.dash__btn:hover { color: var(--accent-ink); border-color: var(--dash-primary); }
 .dash__btn--solid { color: var(--dash-primary-ink); background: var(--dash-primary); border-color: transparent; }
 .dash__btn--solid:hover { color: var(--dash-primary-ink); filter: brightness(1.08); }
 
@@ -120,7 +120,7 @@
   width: 1.9rem;
   height: 1.9rem;
   border-radius: 7px;
-  color: var(--dash-primary);
+  color: var(--accent-ink);
   background: color-mix(in oklab, var(--accent) 12%, transparent);
 }
 .dash-kpi__value {
@@ -136,7 +136,7 @@
   align-items: center;
   gap: 0.3rem;
   margin: 0;
-  color: var(--dash-primary);
+  color: var(--accent-ink);
   font-size: 0.76rem;
 }
 .dash-kpi__sub--flat { color: var(--dash-ink-dim); }
@@ -164,7 +164,7 @@
   padding: 0.15rem 0.55rem;
   border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
   border-radius: 999px;
-  color: var(--dash-primary);
+  color: var(--accent-ink);
   background: color-mix(in oklab, var(--accent) 12%, transparent);
   font-family: var(--dash-mono);
   font-size: 0.62rem;
@@ -175,7 +175,7 @@
   align-items: center;
   gap: 0.15rem;
   flex: none;
-  color: var(--dash-primary);
+  color: var(--accent-ink);
   font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
@@ -281,3 +281,23 @@
 }
 .dash__retry:hover { background: color-mix(in oklab, currentColor 12%, transparent); }
 .dash__retry:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Occurrence filter bar */
+.dash-filters {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75rem 1rem;
+  margin-top: 0.75rem; padding: 0.85rem 1rem;
+  border: 1px solid var(--dash-border); border-radius: 10px; background: var(--dash-card);
+}
+.dash-filters label { display: grid; gap: 0.25rem; font-size: 0.75rem; color: var(--dash-ink-dim); }
+.dash-filters select {
+  min-width: 9.5rem; padding: 0.45rem 0.6rem; border-radius: 8px;
+  border: 1px solid var(--dash-border); background: var(--bg); color: var(--dash-ink); font: inherit; font-size: 0.88rem;
+}
+.dash-filters select:focus-visible, .dash-filters__reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dash-filters__note { flex: 1 1 18rem; margin: 0; font-size: 0.78rem; color: var(--dash-ink-dim); }
+.dash-filters__reset {
+  padding: 0.4rem 0.9rem; border-radius: 999px; border: 1px solid var(--dash-border);
+  background: transparent; color: var(--dash-ink); font: inherit; font-size: 0.82rem; cursor: pointer;
+}
+.dash-filters__reset:hover { background: var(--glass); }
+.dash__lede a { color: var(--accent-ink); }

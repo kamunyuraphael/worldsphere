@@ -16,6 +16,7 @@ import { useAuth } from '../context/auth';
 import { createTrip, recordActivity } from '../services/accountApi';
 import { notify } from '../utils/notifications';
 import './DestinationDetail.css';
+import CloudImage from '../components/CloudImage';
 
 const readableImageName = (path: string) => {
   const file = decodeURIComponent(path.split('/').pop() ?? 'destination view')
@@ -126,7 +127,7 @@ const DestinationDetail = () => {
   return (
     <main className="destination-detail">
       <header className="destination-hero">
-        <img src={destination.hero} alt={`${destination.name} landscape`} />
+        <CloudImage src={destination.hero} alt={`${destination.name} landscape`} sizes="100vw" widths={[800, 1200, 1600, 2000]} priority />
         <div className="destination-hero__shade" />
         <div className="destination-hero__content">
           <Link to="/tourism#destinations"><ArrowLeft size={17} /> Kenya destinations</Link>
@@ -170,7 +171,7 @@ const DestinationDetail = () => {
           {destination.slug === 'nairobi' ? NAIROBI_ATTRACTIONS.map((attraction) => {
             const attractionImages = getNairobiAttractionImages(attraction.slug);
             return <Link className="attraction-grid__link" to={`/destinations/nairobi/attractions/${attraction.slug}`} key={attraction.slug} aria-label={`View ${attraction.name} attraction guide`}>
-              <div className="attraction-grid__image"><img src={attractionImages?.hero ?? destination.hero} alt={`${attraction.name} in Nairobi`} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.src = destination.hero; }} /></div>
+              <div className="attraction-grid__image"><CloudImage src={attractionImages?.hero ?? destination.hero} alt={`${attraction.name} in Nairobi`} onError={(event) => { event.currentTarget.src = destination.hero; }} /></div>
               <div>
                 <div className="attraction-grid__heading"><h3>{attraction.name}</h3><ArrowRight size={18} /></div><p>{attraction.shortDescription}</p>
                 <dl><div><dt>Visit time</dt><dd>{attraction.visitDuration}</dd></div><div><dt>Hours</dt><dd>{attraction.openingHours}</dd></div><div><dt>Fee</dt><dd>{attraction.entryFee}</dd></div></dl>
@@ -179,7 +180,7 @@ const DestinationDetail = () => {
             </Link>;
           }) : destination.attractions.map((attraction) => (
             <article key={attraction.name}>
-              <img src={findLocalImage(localImages, attraction.name, destination.attractions.indexOf(attraction)) ?? attraction.image} alt={`${attraction.name} in ${destination.name}`} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.src = attraction.image; }} />
+              <CloudImage src={findLocalImage(localImages, attraction.name, destination.attractions.indexOf(attraction)) ?? attraction.image} alt={`${attraction.name} in ${destination.name}`} onError={(event) => { event.currentTarget.src = attraction.image; }} />
               <div>
                 <h3>{attraction.name}</h3><p>{attraction.description}</p>
                 <dl><div><dt>Visit time</dt><dd>{attraction.time}</dd></div><div><dt>Hours</dt><dd>{attraction.hours}</dd></div><div><dt>Fee</dt><dd>{attraction.fee}</dd></div></dl>

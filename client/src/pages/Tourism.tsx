@@ -12,6 +12,7 @@ import { tourismImageManifest } from '../data/tourismImages.generated';
 import { unsplashCredits } from '../data/unsplashCredits.generated';
 import './Tourism.css';
 import './TourismDirectory.css';
+import CloudImage from '../components/CloudImage';
 
 const KenyaTourMap = lazy(() => import('../components/tourism/KenyaTourMap'));
 
@@ -79,7 +80,7 @@ const filtered = useMemo(() => DESTINATIONS
   return (
     <main className="tourism">
       <section className="tourism-hero" aria-labelledby="tourism-title">
-        <img className="tourism-hero__image" src={IMAGES.safari} alt="Safari landscape in Kenya at golden hour" />
+        <CloudImage className="tourism-hero__image" src={IMAGES.safari} alt="Safari landscape in Kenya at golden hour" sizes="100vw" widths={[800, 1200, 1600, 2000]} priority />
         <div className="tourism-hero__wash" aria-hidden="true" />
         <div className="tourism-hero__content">
           <div className="tourism-hero__place"><MapPin size={16} /> Kenya, East Africa</div>

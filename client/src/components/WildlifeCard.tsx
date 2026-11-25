@@ -2,7 +2,7 @@ import { useRef, type PointerEvent } from 'react';
 import { Link, useViewTransitionState } from 'react-router-dom';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import type { WildlifeEntry } from '../types/wildlife';
-import { getOptimizedImage } from '../utils/cloudinary';
+import CloudImage from './CloudImage';
 
 interface Props {
   entry: WildlifeEntry;
@@ -35,7 +35,7 @@ const WildlifeCard = ({ entry }: Props) => {
   // True only while navigating to THIS card's detail page — so the shared
   // view-transition-name is present on exactly one image at a time.
   const isTransitioning = useViewTransitionState(to);
-  const image = getOptimizedImage(entry.image, 'card');
+  const image = entry.image;
   const summary = entry.summary.length > SUMMARY_LIMIT
     ? entry.summary.slice(0, SUMMARY_LIMIT).trimEnd() + '…'
     : entry.summary;
@@ -65,10 +65,10 @@ const WildlifeCard = ({ entry }: Props) => {
       style={{ rotateX, rotateY, transformPerspective: 900 }}
     >
       <Link to={to} viewTransition className="wcard__media">
-        <img
+        <CloudImage
           src={image}
           alt={entry.name}
-          loading="lazy" decoding="async"
+          sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw"
           style={{ viewTransitionName: isTransitioning ? 'species-media' : undefined }}
         />
         <span className="wcard__badge">{getBadgeLabel(entry)}</span>
