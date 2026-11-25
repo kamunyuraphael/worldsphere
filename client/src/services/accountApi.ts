@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './serverStatus';
 
 const TOKEN_KEY = 'worldsphere_token';
 export const authToken = () => localStorage.getItem(TOKEN_KEY);
@@ -17,7 +18,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (!token) throw new AccountApiError('Sign in to continue.', 401);
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await apiFetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(options.headers ?? {}) },
     });

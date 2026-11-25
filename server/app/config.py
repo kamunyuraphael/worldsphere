@@ -7,17 +7,21 @@ LOCAL_ORIGINS = ("http://localhost:5173", "http://127.0.0.1:5173",
                  "http://localhost:4173", "http://127.0.0.1:4173")
 
 def parse_cors_origins(frontend_url: str | None = None, extra: str | None = None) -> list[str]:
-    candidates = [*LOCAL_ORIGINS]
-    candidates.extend((frontend_url or os.getenv("FRONTEND_URL", "")).split(","))
-    candidates.extend((extra or os.getenv("CORS_ORIGINS", "")).split(","))
+    candidates = [(v, "built-in") for v in LOCAL_ORIGINS]
+    candidates += [(v, "FRONTEND_URL") for v in (frontend_url or os.getenv("FRONTEND_URL", "")).split(",")]
+    candidates += [(v, "CORS_ORIGINS") for v in (extra or os.getenv("CORS_ORIGINS", "")).split(",")]
     origins: list[str] = []
-    for value in candidates:
+    for value, source in candidates:
         value = value.strip().rstrip("/")
         if not value:
             continue
         parsed = urlsplit(value)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.path:
-            raise RuntimeError(f"Invalid CORS origin: {value!r}")
+            raise RuntimeError(
+                f"Invalid origin {value!r} in {source}. Use a full origin such as "
+                "https://your-app.vercel.app (scheme + host, no path); "
+                "check this variable's value in your host's environment settings."
+            )
         normalized = f"{parsed.scheme.lower()}://{parsed.netloc.lower()}"
         if normalized not in origins:
             origins.append(normalized)

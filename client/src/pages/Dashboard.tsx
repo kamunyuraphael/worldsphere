@@ -1,7 +1,7 @@
 import { Children, useEffect, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ChevronRight, FlaskConical, Globe2, Leaf, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Globe2, Leaf, ShieldCheck, type LucideIcon } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   PieChart, Pie, Cell, LineChart, Line,
@@ -53,6 +53,8 @@ const axisTick = { fontSize: 11, fill: 'var(--dash-muted)', fontFamily: 'var(--d
 /** Loads once; surfaces loading + a readable error so each panel group fails on its own. */
 function useLoad<T>(load: () => Promise<T>) {
   const [state, setState] = useState<{ data: T | null; error: string; loading: boolean }>({ data: null, error: '', loading: true });
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setState(s => ({ ...s, error: '', loading: true })); setAttempt(n => n + 1); };
   useEffect(() => {
     let alive = true;
     load()
@@ -60,9 +62,24 @@ function useLoad<T>(load: () => Promise<T>) {
       .catch(err => alive && setState({ data: null, error: err instanceof Error ? err.message : 'Request failed.', loading: false }));
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return state;
+  }, [attempt]);
+  return { ...state, retry };
 }
+
+/** Placeholder panels shown while a section loads, so the layout does not jump. */
+const DashSkeleton = ({ label }: { label: string }) => (
+  <div className="dash-grid dash-skeleton" role="status" aria-label={label}>
+    {[2, 1, 1, 2].map((span, i) => <div key={i} className={`dash-skeleton__panel dash-skeleton__panel--${span}`} />)}
+  </div>
+);
+
+const DashError = ({ message, onRetry, hint }: { message: string; onRetry: () => void; hint?: string }) => (
+  <div className="dash__error" role="alert">
+    <div>{message}</div>
+    {hint && <div className="dash__hint">{hint}</div>}
+    <button type="button" className="dash__retry" onClick={onRetry}>Try again</button>
+  </div>
+);
 
 const StatNumber = ({ value }: { value: number }) => <>{useCountUp(value).toLocaleString()}</>;
 
@@ -206,13 +223,17 @@ const Dashboard = () => {
   const [insights, setInsights] = useState<InsightsResponse | null>(null);
   const [insightsError, setInsightsError] = useState('');
   const [insightsLoading, setInsightsLoading] = useState(true);
+  const [insightsAttempt, setInsightsAttempt] = useState(0);
+  const retryInsights = () => { setInsightsError(''); setInsightsLoading(true); setInsightsAttempt(n => n + 1); };
 
   useEffect(() => {
+    let alive = true;
     fetchConservationInsights()
-      .then(setInsights)
-      .catch(err => setInsightsError(err instanceof ConservationApiError ? err.message : 'Could not load model insights.'))
-      .finally(() => setInsightsLoading(false));
-  }, []);
+      .then(data => { if (alive) setInsights(data); })
+      .catch(err => { if (alive) setInsightsError(err instanceof ConservationApiError ? err.message : 'Could not load model insights.'); })
+      .finally(() => { if (alive) setInsightsLoading(false); });
+    return () => { alive = false; };
+  }, [insightsAttempt]);
 
   const importanceData = insights?.feature_importance.map(f => ({ name: featureLabel(f.feature), value: Math.round(f.importance * 100) })) ?? [];
   const categoryDistributionData = insights ? recordToChartData(insights.category_distribution) : [];
@@ -226,6 +247,7 @@ const Dashboard = () => {
 
   const gbifError = species.error || occurrences.error;
   const gbifLoading = species.loading || occurrences.loading;
+  const retryGbif = () => { if (species.error) species.retry(); if (occurrences.error) occurrences.retry(); };
 
   return (
     <section className="page-shell dash">
@@ -272,8 +294,8 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {gbifLoading && <div className="dash__loading"><FlaskConical size={16} aria-hidden="true" /> Loading live GBIF statistics…</div>}
-          {!gbifLoading && gbifError && <div className="dash__error">{gbifError}</div>}
+          {gbifLoading && !sp && <DashSkeleton label="Loading live GBIF statistics" />}
+          {!gbifLoading && gbifError && <DashError message={gbifError} onRetry={retryGbif} />}
 
           {sp && (
             <div className="dash-grid">
@@ -425,17 +447,15 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {insightsLoading && (
-            <div className="dash__loading"><FlaskConical size={16} aria-hidden="true" /> Loading model insights…</div>
-          )}
+          {insightsLoading && <DashSkeleton label="Loading model insights" />}
           {!insightsLoading && insightsError && (
-            <div className="dash__error">
-              {insightsError}
-              <div style={{ marginTop: '0.4rem' }}>
-                Start the ml-service to see this section live: <code>python model/train.py</code> then{' '}
-                <code>uvicorn app.main:app --reload --port 8001</code>.
-              </div>
-            </div>
+            <DashError
+              message={insightsError}
+              onRetry={retryInsights}
+              hint={import.meta.env.DEV
+                ? 'Start the ml-service: python model/train.py, then uvicorn app.main:app --reload --port 8001.'
+                : 'The analysis service may be waking up. Try again in a few seconds.'}
+            />
           )}
 
           {insights && (

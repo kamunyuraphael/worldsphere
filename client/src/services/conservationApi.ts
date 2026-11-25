@@ -1,4 +1,5 @@
 import { ML_API_URL } from './apiConfig';
+import { apiFetch } from './serverStatus';
 
 export type TaxClass = 'Mammalia' | 'Aves' | 'Reptilia' | 'Amphibia' | 'Actinopterygii';
 export type Habitat = 'Forest' | 'Grassland' | 'Wetland' | 'Marine' | 'Freshwater' | 'Desert' | 'Mountain';
@@ -57,7 +58,7 @@ export class ConservationApiError extends Error {}
 const request = async <T>(path: string, options?: RequestInit): Promise<T> => {
     let response: Response;
     try {
-        response = await fetch(`${ML_API_URL}${path}`, {
+        response = await apiFetch(`${ML_API_URL}${path}`, {
             headers: { 'Content-Type': 'application/json' },
             ...options,
         });

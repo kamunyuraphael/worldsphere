@@ -1,6 +1,7 @@
 /** Auth + favorites API client for the server. */
 
 import { API_BASE_URL as API_BASE } from './apiConfig';
+import { apiFetch } from './serverStatus';
 
 export interface User { id: number; name: string; email: string; }
 export interface Favorite {
@@ -18,7 +19,7 @@ export class AuthApiError extends Error {}
 const request = async <T>(path: string, options: RequestInit = {}, token?: string): Promise<T> => {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, {
+    res = await apiFetch(`${API_BASE}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

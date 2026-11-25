@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './apiConfig';
+import { apiFetch } from './serverStatus';
 
 /** Cached IUCN Red List totals served by the server (`GET /stats/iucn`). */
 export interface IucnStats {
@@ -16,7 +17,7 @@ export interface IucnStats {
 
 /** Resolves to null when the server has no IUCN data yet (503) so the page can simply omit the section. */
 export const fetchIucnStats = async (): Promise<IucnStats | null> => {
-  const res = await fetch(`${API_BASE_URL}/stats/iucn`);
+  const res = await apiFetch(`${API_BASE_URL}/stats/iucn`);
   if (res.status === 503 || res.status === 404) return null;
   if (!res.ok) throw new Error(`IUCN statistics request failed (${res.status}).`);
   return res.json() as Promise<IucnStats>;

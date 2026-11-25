@@ -1,6 +1,7 @@
 /** Streaming client for the OpenRouter-powered server /ai/ask endpoint. */
 
 import { API_BASE_URL as API_BASE } from './apiConfig';
+import { apiFetch } from './serverStatus';
 
 export class AiError extends Error {}
 
@@ -11,7 +12,7 @@ export class AiError extends Error {}
 export async function* askStream(question: string, signal?: AbortSignal): AsyncGenerator<string> {
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}/ai/ask`, {
+    res = await apiFetch(`${API_BASE}/ai/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question }),

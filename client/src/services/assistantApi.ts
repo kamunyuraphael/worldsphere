@@ -1,5 +1,6 @@
 export type AssistantType = 'SPECIES' | 'TOUR_GUIDE';
 import { API_BASE_URL as API_BASE } from './apiConfig';
+import { apiFetch } from './serverStatus';
 export type ChatRole = 'user' | 'assistant';
 
 export interface ChatMessage {
@@ -66,7 +67,7 @@ export async function streamAssistantChat(
 ): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}/api/ai/chat`, {
+    response = await apiFetch(`${API_BASE}/api/ai/chat`, {
       method: 'POST',
       headers: headers(true),
       body: JSON.stringify(input),
@@ -89,40 +90,40 @@ export async function streamAssistantChat(
 }
 
 export async function listConversations(type: AssistantType): Promise<ConversationSummary[]> {
-  const response = await fetch(`${API_BASE}/api/ai/conversations?assistantType=${type}`, { headers: headers() });
+  const response = await apiFetch(`${API_BASE}/api/ai/conversations?assistantType=${type}`, { headers: headers() });
   if (!response.ok) await parseError(response);
   return response.json();
 }
 
 export async function getConversation(id: string, type: AssistantType): Promise<ConversationDetail> {
-  const response = await fetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}?assistantType=${type}`, { headers: headers() });
+  const response = await apiFetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}?assistantType=${type}`, { headers: headers() });
   if (!response.ok) await parseError(response);
   return response.json();
 }
 
 export async function renameConversation(id: string, type: AssistantType, title: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}`, {
+  const response = await apiFetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}`, {
     method: 'PATCH', headers: headers(true), body: JSON.stringify({ assistantType: type, title }),
   });
   if (!response.ok) await parseError(response);
 }
 
 export async function deleteConversation(id: string, type: AssistantType): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}?assistantType=${type}`, {
+  const response = await apiFetch(`${API_BASE}/api/ai/conversations/${encodeURIComponent(id)}?assistantType=${type}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!response.ok) await parseError(response);
 }
 
 export async function sendFeedback(messageId: string, rating: -1 | 1): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/ai/feedback`, {
+  const response = await apiFetch(`${API_BASE}/api/ai/feedback`, {
     method: 'POST', headers: headers(true), body: JSON.stringify({ messageId, rating }),
   });
   if (!response.ok) await parseError(response);
 }
 
 export async function claimAnonymousConversations(): Promise<number> {
-  const response = await fetch(`${API_BASE}/api/ai/conversations/claim`, { method: 'POST', headers: headers() });
+  const response = await apiFetch(`${API_BASE}/api/ai/conversations/claim`, { method: 'POST', headers: headers() });
   if (!response.ok) await parseError(response);
   return (await response.json()).claimed;
 }

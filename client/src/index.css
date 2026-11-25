@@ -490,7 +490,7 @@ a:hover { color: var(--highlight-color); }
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-nav);
-  width: min(1160px, calc(100% - 2rem));
+  width: min(1280px, calc(100% - 2rem));
   transition: transform var(--dur-mid) var(--ease-out-expo), opacity var(--dur-mid) var(--ease-out-expo);
 }
 .fnav.is-hidden {
@@ -615,6 +615,16 @@ a:hover { color: var(--highlight-color); }
   max-width: none;
 }
 .fnav__profile:hover { transform: translateY(-1px); filter: brightness(1.06); color: #222831; }
+
+/* Below ~1400px the icon+label pairs no longer fit, so keep labels and drop the nav icons.
+   Sign In, search and the theme toggle always stay visible. */
+@media (max-width: 1400px) {
+  .fnav__item svg { display: none; }
+  .fnav__item { padding-inline: 0.7rem; }
+}
+@media (max-width: 1160px) {
+  .fnav__brand span { display: none; }
+}
 
 /* Compact spacing at narrower desktop widths while keeping every label visible. */
 @media (max-width: 1080px) {
@@ -1993,3 +2003,28 @@ button.chip--sm, a.chip--sm { cursor: pointer; } /* interactive chips (suggestio
     contain-intrinsic-size: auto 800px;
   }
 }
+
+/* ------------------------------------------------ Server wake-up notice --- */
+.wake-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: calc(var(--z-nav) + 5);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: min(32rem, calc(100% - 2rem));
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-lg, 1rem);
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--ink-strong);
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.wake-notice__spin { flex: none; color: var(--accent); animation: wake-spin 1s linear infinite; }
+@keyframes wake-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wake-notice__spin { animation: none; } }
+@media (min-width: 861px) { .wake-notice { bottom: 1.5rem; } }

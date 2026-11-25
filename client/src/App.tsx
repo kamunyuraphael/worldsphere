@@ -5,6 +5,7 @@ import { Spinner } from 'react-bootstrap';
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastCenter from './components/ToastCenter';
+import ServerWakeNotice from './components/ServerWakeNotice';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 
@@ -94,6 +95,7 @@ const Layout = () => (
     </div>
     <Footer />
     <ToastCenter />
+    <ServerWakeNotice />
   </>
 );
 
