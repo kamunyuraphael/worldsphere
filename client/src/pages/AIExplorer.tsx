@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Markdown from '../components/ai/Markdown';
 import {
   Sparkles, ArrowRight, ShieldAlert, Leaf, Globe2, LineChart, Compass, FlaskConical, Loader2,
@@ -131,7 +131,7 @@ const AIExplorer = () => {
           )}
         </header>
 
-        <motion.div
+        <m.div
           className="ai-topics"
           variants={container}
           initial="hidden"
@@ -149,16 +149,16 @@ const AIExplorer = () => {
               </>
             );
             return 'action' in topic ? (
-              <motion.button key={topic.title} variants={item} className="topic" onClick={scrollToPredictor} type="button">
+              <m.button key={topic.title} variants={item} className="topic" onClick={scrollToPredictor} type="button">
                 {inner}
-              </motion.button>
+              </m.button>
             ) : (
-              <motion.div key={topic.title} variants={item}>
+              <m.div key={topic.title} variants={item}>
                 <Link to={topic.to} className="topic">{inner}</Link>
-              </motion.div>
+              </m.div>
             );
           })}
-        </motion.div>
+        </m.div>
 
         <div className="ai-predictor" ref={predictorRef}>
           <div className="ai-predictor__head">

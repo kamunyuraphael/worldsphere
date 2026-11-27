@@ -1,73 +1,92 @@
-import { PawPrint, Sprout, Droplets, MessageCircle, Users, ArrowRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { ArrowRight, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { animalData, plantData, waterData } from '../data';
 import Reveal from '../components/Reveal';
+import JoinButton from '../components/communities/JoinButton';
+import { CIRCLE_ICON, catalogFor, memberLabel } from '../components/communities/circleMeta';
+import { useAuth } from '../context/auth';
+import { fetchCircles, type Circle } from '../services/communitiesApi';
 
-// Circles derived from the real catalog categories; membership figures are
-// illustrative placeholders for this design preview.
-const CIRCLES = [
-  { icon: PawPrint, name: 'Wildlife Guild', desc: 'Trackers and field biologists documenting animal life.', entries: animalData.length, members: '3.2k', to: '/stories?category=animal' },
-  { icon: Sprout, name: 'Flora Circle', desc: 'Botanists and growers cataloguing the plant world.', entries: plantData.length, members: '1.8k', to: '/stories?category=plant' },
-  { icon: Droplets, name: 'Waters Collective', desc: 'Divers and hydrologists exploring aquatic ecosystems.', entries: waterData.length, members: '2.4k', to: '/stories?category=water' },
-];
+const Communities = () => {
+  const { isAuthenticated, user } = useAuth();
+  const [circles, setCircles] = useState<Circle[] | null>(null);
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
 
-const THREADS = [
-  { title: 'Best time to observe migratory herds in the Serengeti?', circle: 'Wildlife Guild', replies: 24 },
-  { title: 'Reviving ancient seed banks — field results', circle: 'Flora Circle', replies: 17 },
-  { title: 'Coral bleaching recovery: what we saw this season', circle: 'Waters Collective', replies: 31 },
-  { title: 'Camera-trap ethics in protected reserves', circle: 'Wildlife Guild', replies: 12 },
-];
+  // Reload when someone signs in or out so the "Joined" state matches the account.
+  useEffect(() => {
+    let alive = true;
+    fetchCircles()
+      .then(data => { if (alive) { setCircles(data); setError(''); } })
+      .catch(err => { if (alive) setError(err instanceof Error ? err.message : 'Could not load communities.'); });
+    return () => { alive = false; };
+  }, [attempt, isAuthenticated, user?.id]);
 
-const Communities = () => (
-  <section className="page-shell">
-    <div className="container">
-      <header className="page-head">
-        <p className="kicker">Communities</p>
-        <h1 className="page-head__title">Explore together</h1>
-        <p className="page-head__lede">
-          Circles of explorers, researchers, and conservationists gathered around
-          the species and places they care about.
-        </p>
-        <span className="preview-note"><Users size={13} strokeWidth={2} /> Design preview · membership figures illustrative</span>
-      </header>
+  const replace = useCallback((updated: Circle) =>
+    setCircles(current => current?.map(c => (c.slug === updated.slug ? updated : c)) ?? current), []);
 
-      <div className="tile-grid mb-5">
-        {CIRCLES.map((c, i) => {
-          const Icon = c.icon;
-          return (
-            <Reveal key={c.name} delay={i * 0.07}>
-              <Link to={c.to} className="tile">
-                <span className="tile__icon"><Icon size={22} strokeWidth={1.75} /></span>
-                <h3 className="tile__title">{c.name}</h3>
-                <p className="tile__desc">{c.desc}</p>
-                <div className="tile__stats">
-                  <span>{c.members} explorers</span>
-                  <span>{c.entries} entries</span>
-                </div>
-                <span className="tile__more">Join the circle <ArrowRight size={15} strokeWidth={2} /></span>
-              </Link>
-            </Reveal>
-          );
-        })}
+  return (
+    <section className="page-shell">
+      <div className="container">
+        <header className="page-head">
+          <p className="kicker">Communities</p>
+          <h1 className="page-head__title">Explore together</h1>
+          <p className="page-head__lede">
+            Circles of explorers, researchers, and conservationists gathered around
+            the species and places they care about. Join one to see who else is in it.
+          </p>
+        </header>
+
+        {error && !circles && (
+          <div className="dash__error" role="alert">
+            <div>{error}</div>
+            <button type="button" className="dash__retry" onClick={() => setAttempt(n => n + 1)}>Try again</button>
+          </div>
+        )}
+
+        {!circles && !error && (
+          <div className="tile-grid mb-5" role="status" aria-label="Loading communities">
+            {[0, 1, 2].map(i => <div key={i} className="tile circle-skeleton" />)}
+          </div>
+        )}
+
+        {circles && (
+          <div className="tile-grid mb-5">
+            {circles.map((circle, i) => {
+              const Icon = CIRCLE_ICON[circle.category];
+              return (
+                <Reveal key={circle.slug} delay={i * 0.07}>
+                  <article className="tile circle-card">
+                    <span className="tile__icon"><Icon size={22} strokeWidth={1.75} aria-hidden="true" /></span>
+                    <h2 className="tile__title"><Link to={`/communities/${circle.slug}`} className="circle-card__link">{circle.name}</Link></h2>
+                    <p className="tile__desc">{circle.description}</p>
+                    <div className="tile__stats">
+                      <span>{memberLabel(circle.memberCount)}</span>
+                      <span>{catalogFor(circle.category).length} entries</span>
+                    </div>
+                    <div className="circle-card__actions">
+                      <JoinButton circle={circle} onChange={replace} />
+                      <Link to={`/communities/${circle.slug}`} className="tile__more">Open circle <ArrowRight size={15} strokeWidth={2} aria-hidden="true" /></Link>
+                    </div>
+                  </article>
+                </Reveal>
+              );
+            })}
+          </div>
+        )}
+
+        <Reveal>
+          <aside className="circle-soon">
+            <MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
+            <div>
+              <h2 className="circle-soon__title">Discussions are coming</h2>
+              <p>Threads and replies are next. Members of a circle will be the first to post when they open.</p>
+            </div>
+          </aside>
+        </Reveal>
       </div>
-
-      <Reveal>
-        <h2 className="section-sub">Active discussions</h2>
-        <ul className="thread-list">
-          {THREADS.map(t => (
-            <li key={t.title} className="thread">
-              <MessageCircle size={18} strokeWidth={1.75} className="thread__icon" />
-              <div className="thread__body">
-                <p className="thread__title">{t.title}</p>
-                <p className="thread__meta">{t.circle} · {t.replies} replies</p>
-              </div>
-              <ArrowRight size={16} strokeWidth={2} className="thread__arrow" />
-            </li>
-          ))}
-        </ul>
-      </Reveal>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Communities;

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { X } from 'lucide-react';
 import { allWildlife } from '../data';
 import StoryCard from '../components/StoryCard';
@@ -96,7 +96,7 @@ const Stories = () => {
         </header>
 
         {featured && (
-          <motion.div
+          <m.div
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -104,13 +104,13 @@ const Stories = () => {
             className="stories__featured"
           >
             <StoryCard entry={featured} featured />
-          </motion.div>
+          </m.div>
         )}
 
         <div className="stories__grid">
           <AnimatePresence mode="popLayout">
             {rest.map(entry => (
-              <motion.div
+              <m.div
                 key={entry.id}
                 layout
                 initial={{ opacity: 0, y: 18, scale: 0.98 }}
@@ -119,7 +119,7 @@ const Stories = () => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
                 <StoryCard entry={entry} />
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

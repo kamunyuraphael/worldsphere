@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { Compass, Play } from 'lucide-react';
 import { useMagnetic } from '../hooks/useMagnetic';
 
@@ -14,8 +14,9 @@ const container = {
   show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
 };
 
+// Motion only moves the text; it never hides it. Hidden text can't be painted, which delays the first meaningful paint.
 const item = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 1, y: 20 },
   show: {
     opacity: 1,
     y: 0,
@@ -34,7 +35,7 @@ const ExplodingHeadline = () => {
   let characterIndex = 0;
 
   return (
-    <motion.h1 className="hero__title hero__title--animated" variants={item} aria-label="Explore the Planet.">
+    <m.h1 className="hero__title hero__title--animated" variants={item} aria-label="Explore the Planet.">
       {HEADLINE.map((word, wordIndex) => {
         const Word = word.emphasis ? 'em' : 'span';
         return (
@@ -45,7 +46,7 @@ const ExplodingHeadline = () => {
               const x = ((index % 5) - 2) * 18;
               const y = ((index % 3) - 1) * 24;
               return (
-                <motion.span
+                <m.span
                   className="hero__letter"
                   key={`${word.text}-${index}`}
                   animate={reduceMotion ? { opacity: 1 } : {
@@ -63,14 +64,14 @@ const ExplodingHeadline = () => {
                   }}
                 >
                   {character}
-                </motion.span>
+                </m.span>
               );
             })}
             {wordIndex < HEADLINE.length - 1 && <span className="hero__word-space"> </span>}
           </Word>
         );
       })}
-    </motion.h1>
+    </m.h1>
   );
 };
 const Hero = () => {
@@ -98,27 +99,27 @@ const Hero = () => {
       ) : <div className="shader-stage" aria-hidden="true"><div className="shader-fallback" /></div>}
 
       <Container>
-        <motion.div className="hero__inner" variants={container} initial="hidden" animate="show">
-          <motion.div className="hero__kicker mb-3" variants={item}>
-            <img src="/WorldSphere-Logo-Package/WorldSphere-Logo.png" alt="WorldSphere" />
-          </motion.div>
+        <m.div className="hero__inner" variants={container} initial="hidden" animate="show">
+          <m.div className="hero__kicker mb-3" variants={item}>
+            <img src="/WorldSphere-Logo-Package/WorldSphere-Logo-256.png" alt="WorldSphere" width="256" height="258" />
+          </m.div>
 
           <ExplodingHeadline />
 
-          <motion.p className="hero__lede" variants={item}>
+          <m.p className="hero__lede" variants={item}>
             Discover knowledge. Connect humanity. A living atlas of Earth's
             animals, plants, and waters — told with the care of a field expedition.
-          </motion.p>
+          </m.p>
 
-          <motion.div className="hero__actions" variants={item}>
+          <m.div className="hero__actions" variants={item}>
             <Link ref={magPrimary} to="/explore" className="btn btn-solar">
               <Compass size={18} strokeWidth={2} /> Begin Exploring
             </Link>
             <Link ref={magGhost} to="/stories" className="btn btn-ghost">
               <Play size={16} strokeWidth={2} /> Watch Stories
             </Link>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </Container>
 
       <div className="hero__scroll" aria-hidden="true">

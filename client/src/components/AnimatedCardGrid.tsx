@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Row } from 'react-bootstrap';
 import WildlifeCard from './WildlifeCard';
 import { useCountUp } from '../hooks/useCountUp';
@@ -36,7 +36,7 @@ const AnimatedCardGrid = ({ entries, emptyLabel }: Props) => {
         <Row className="g-4">
           <AnimatePresence mode="popLayout">
             {entries.map(entry => (
-              <motion.div
+              <m.div
                 key={entry.id}
                 className="col-lg-4 col-md-6"
                 layout
@@ -47,7 +47,7 @@ const AnimatedCardGrid = ({ entries, emptyLabel }: Props) => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
                 <WildlifeCard entry={entry} />
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </Row>

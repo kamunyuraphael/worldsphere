@@ -47,7 +47,7 @@ const Footer = () => {
       <Container>
         <div className="site-footer__grid">
           <div className="site-footer__brand">
-            <img className="footer__brand-logo" src="/WorldSphere-Logo-Package/WorldSphere-Logo.png" alt="WorldSphere" />
+            <img className="footer__brand-logo" src="/WorldSphere-Logo-Package/WorldSphere-Logo-256.png" alt="WorldSphere" width="128" height="129" />
             <p>
               A digital sanctuary for the planet&apos;s biodiversity, with a Kenya travel guide alongside it.
               Explore species, plan trips and learn what it takes to protect them.

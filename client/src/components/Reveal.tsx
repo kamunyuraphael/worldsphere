@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
  * view. Honors reduced-motion globally via <MotionConfig reducedMotion="user">.
  */
 const Reveal = ({ children, className, delay = 0, y = 28 }: Props) => (
-  <motion.div
+  <m.div
     className={className}
     initial={{ opacity: 0, y }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -24,7 +24,7 @@ const Reveal = ({ children, className, delay = 0, y = 28 }: Props) => (
     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay }}
   >
     {children}
-  </motion.div>
+  </m.div>
 );
 
 export default Reveal;

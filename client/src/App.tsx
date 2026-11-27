@@ -1,6 +1,6 @@
 import { lazy, Suspense, useLayoutEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, useLocation } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { LazyMotion, MotionConfig } from 'framer-motion';
 import { Spinner } from 'react-bootstrap';
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -25,6 +25,8 @@ const Maps = lazy(() => import('./pages/Maps'));
 const Stories = lazy(() => import('./pages/Stories'));
 const AIExplorer = lazy(() => import('./pages/AIExplorer'));
 const Communities = lazy(() => import('./pages/Communities'));
+const CircleDetail = lazy(() => import('./pages/CircleDetail'));
+const CircleThread = lazy(() => import('./pages/CircleThread'));
 const Expeditions = lazy(() => import('./pages/Expeditions'));
 const GbifExplore = lazy(() => import('./pages/GbifExplore'));
 const GbifSpecies = lazy(() => import('./pages/GbifSpecies'));
@@ -42,8 +44,10 @@ const SpeciesAI = lazy(() => import('./pages/SpeciesAI'));
 const TourGuideAI = lazy(() => import('./pages/TourGuideAI'));
 const RouteError = lazy(() => import('./pages/RouteError'));
 
+// Tall enough to push the footer below the fold while a route loads; a footer visible
+// during loading jumps down when the page arrives (layout shift).
 const PageFallback = () => (
-  <div style={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}>
+  <div style={{ minHeight: '100svh', display: 'grid', placeItems: 'center' }} role="status" aria-label="Loading page">
     <Spinner animation="border" style={{ color: 'var(--highlight-color)' }} />
   </div>
 );
@@ -114,6 +118,8 @@ const router = createBrowserRouter([
       { path: 'maps', element: <Maps /> },
       { path: 'research', element: <Dashboard /> },
       { path: 'communities', element: <Communities /> },
+      { path: 'communities/:slug', element: <CircleDetail /> },
+      { path: 'communities/:slug/threads/:id', element: <CircleThread /> },
       { path: 'expeditions', element: <Expeditions /> },
       { path: 'ai', element: <AIExplorer /> },
       { path: 'ai/species', element: <SpeciesAI /> },
@@ -152,7 +158,9 @@ function App() {
       <AuthProvider>
         {/* reducedMotion="user" makes every framer animation honor the OS setting */}
         <MotionConfig reducedMotion="user">
-          <RouterProvider router={router} />
+          <LazyMotion strict features={() => import('./lib/motionFeatures').then(module => module.default)}>
+            <RouterProvider router={router} />
+          </LazyMotion>
         </MotionConfig>
       </AuthProvider>
     </ThemeProvider>

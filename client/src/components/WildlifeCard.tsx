@@ -1,6 +1,6 @@
 import { useRef, type PointerEvent } from 'react';
 import { Link, useViewTransitionState } from 'react-router-dom';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { m, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import type { WildlifeEntry } from '../types/wildlife';
 import CloudImage from './CloudImage';
 
@@ -57,7 +57,7 @@ const WildlifeCard = ({ entry }: Props) => {
   const onLeave = () => { px.set(0.5); py.set(0.5); };
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className="wcard"
       onPointerMove={onMove}
@@ -82,7 +82,7 @@ const WildlifeCard = ({ entry }: Props) => {
           Learn more <span aria-hidden="true">→</span>
         </Link>
       </div>
-    </motion.div>
+    </m.div>
   );
 };
 

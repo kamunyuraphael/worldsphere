@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from app.schemas import (
     SignupRequest, LoginRequest, AuthResponse, UserOut, FavoriteIn, FavoriteOut,
 )
-from app import ai, db, auth, account
+from app import ai, db, auth, account, communities
 from app.ai_core.router import router as shared_ai_router
 from app.ai_core import client as ai_client
 from app.ai_core import rate_limit as ai_rate_limit
@@ -49,6 +49,7 @@ app.add_middleware(
 
 app.include_router(shared_ai_router)
 app.include_router(account.router)
+app.include_router(communities.router)
 
 @app.get("/health")
 def health(response: Response) -> dict:
