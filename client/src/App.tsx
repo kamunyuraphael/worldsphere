@@ -1,11 +1,11 @@
 import { lazy, Suspense, useLayoutEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, useLocation } from 'react-router-dom';
+import ServerWakeIndicator from './components/ServerWakeIndicator';
 import { LazyMotion, MotionConfig } from 'framer-motion';
 import { Spinner } from 'react-bootstrap';
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ToastCenter from './components/ToastCenter';
-import ServerWakeNotice from './components/ServerWakeNotice';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 
@@ -99,7 +99,7 @@ const Layout = () => (
     </div>
     <Footer />
     <ToastCenter />
-    <ServerWakeNotice />
+    <ServerWakeIndicator />
   </>
 );
 

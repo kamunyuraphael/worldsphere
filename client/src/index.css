@@ -2013,30 +2013,7 @@ button.chip--sm, a.chip--sm { cursor: pointer; } /* interactive chips (suggestio
   }
 }
 
-/* ------------------------------------------------ Server wake-up notice --- */
-.wake-notice {
-  position: fixed;
-  left: 50%;
-  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: calc(var(--z-nav) + 5);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  max-width: min(32rem, calc(100% - 2rem));
-  padding: 0.7rem 1rem;
-  border-radius: var(--radius-lg, 1rem);
-  background: var(--bg-elev-2);
-  border: 1px solid var(--border);
-  color: var(--ink-strong);
-  box-shadow: var(--shadow-md);
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-.wake-notice__spin { flex: none; color: var(--accent-ink); animation: wake-spin 1s linear infinite; }
 @keyframes wake-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .wake-notice__spin { animation: none; } }
-@media (min-width: 861px) { .wake-notice { bottom: 1.5rem; } }
 
 /* ------------------------------------------------------ Image fade-in --- */
 .cimg {
@@ -2209,3 +2186,14 @@ noscript + * .cimg, html:not(.js) .cimg { opacity: 1; }
 .circle-hidden { margin: 0.4rem 0; padding: 0.5rem 0.75rem; border-left: 3px solid var(--bright-ink); background: var(--bg); border-radius: 4px; font-size: 0.85rem; color: var(--ink-dim); }
 .circle-thread__flag { font-weight: 400; font-style: normal; font-size: 0.8rem; color: var(--bright-ink); }
 .circle-post .circle-link, .circle-replies .circle-link { margin-right: 1rem; }
+
+/* Server wake-up indicator: a small orbiting globe, no text */
+.wake-figure { position: fixed; right: 1rem; bottom: calc(5.75rem + env(safe-area-inset-bottom)); z-index: var(--z-toast, 600); display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--bg-elev); border: 1px solid var(--border); box-shadow: 0 6px 18px rgba(0,0,0,.14); animation: wake-fade-in .25s ease-out; pointer-events: none; }
+@media (min-width: 992px) { .wake-figure { bottom: 1.5rem; right: 1.5rem; } }
+.wake-figure__ring, .wake-figure__meridian { fill: none; stroke: var(--accent-ink); stroke-width: 1.5; stroke-linecap: round; opacity: .75; }
+.wake-figure__meridian { opacity: .45; }
+.wake-figure__dot { fill: var(--accent-bright); }
+.wake-figure__orbit { transform-origin: 20px 20px; animation: wake-spin 1.4s linear infinite; }
+@keyframes wake-fade-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .wake-figure__orbit { animation: wake-pulse 1.6s ease-in-out infinite; } .wake-figure { animation: none; } }
+@keyframes wake-pulse { 50% { opacity: .35; } }
